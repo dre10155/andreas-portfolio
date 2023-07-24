@@ -6,6 +6,7 @@
         <nav class="nav flex gap-8">
             <router-link class="hover:text-white" to="/">Home</router-link> 
             <router-link  class="hover:text-white" to="/login">Login</router-link>
+            <router-link class="hover:text-white" to="/profile">Profile</router-link>
         </nav>
     </div>
      <slot/>
