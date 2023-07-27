@@ -43,7 +43,7 @@
             <button @click="seeUser" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"  >See User</button>
             <button @click="logoutUser" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Logout</button>
         </div>
-        
+       {{isSessionValid}}
     </div>
 </template>
 
@@ -51,6 +51,7 @@
 import { ref , computed } from 'vue'
 import { supabase } from '../helpers/supabase'
 import { useRouter } from 'vue-router'
+import { useNavigation } from '../composables'
    
 
 
@@ -61,14 +62,32 @@ let emailError = ref('')
 let passwordError = ref('')
 let name = ref('')
 let nameError = ref('')
+let  { isSessionValid} = useNavigation()
+
+
+//Create hasError  check is the string is greater >0
+let hasError = computed(() =>{
+    return emailError.value.length > 0  || passwordError.value.length > 0
+})
 
 let isPasswordEmpty = computed(() =>{
     return !password.value
 })
+
+let isEmailEmpty = computed(()=>{
+    return !email.value
+})
+
+
 let router = useRouter()
 
 let createUser = async () => {
-        try {
+    // if (isEmailEmpty || isPasswordEmpty){
+    //     validateEmail()
+    //     validatePassword()
+    // } else{
+         try {
+            
             const { data, error } = await supabase.auth.signUp({
                 email: email.value,
                 password: password.value,
@@ -82,6 +101,8 @@ let createUser = async () => {
         } catch (error) {
             console.log(error) 
     }
+    // }
+       
 }
 let loginUser = async () => {
     try {
@@ -103,7 +124,7 @@ let loginUser = async () => {
 
 let seeUser = async () => {
 
-    let localuser = supabase.auth.getSession()
+    let localuser = await supabase.auth.getSession()
     console.log('user', localuser)
 }   
 
@@ -118,7 +139,7 @@ let logoutUser =  async () => {
 
 let validateEmail = () => {
       let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email.value) {
+      if (isEmailEmpty.value) {
         emailError.value = 'Error - Email is required'
       } else if (!emailRegex.test(email.value)) {
         emailError.value = 'Error - Invalid email format'
