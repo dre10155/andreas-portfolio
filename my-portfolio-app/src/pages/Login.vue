@@ -42,8 +42,11 @@
             <button @click="loginUser" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Login</button>
             <button @click="seeUser" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"  >See User</button>
             <button @click="logoutUser" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Logout</button>
+            <div v-if="errorMessage" class="text-red-500 text-xs mt-1">{{ errorMessage}}</div>
         </div>
        {{isSessionValid}}
+
+      
     </div>
 </template>
 
@@ -62,10 +65,15 @@ let emailError = ref('')
 let passwordError = ref('')
 let name = ref('')
 let nameError = ref('')
+let errorMessage = ref('')
 let  { isSessionValid} = useNavigation()
 
 
 //Create hasError  check is the string is greater >0
+let hasBackendError = computed(() =>{
+    return !errorMessage.value.length > 0 
+})
+
 let hasError = computed(() =>{
     return emailError.value.length > 0  || passwordError.value.length > 0
 })
@@ -82,26 +90,19 @@ let isEmailEmpty = computed(()=>{
 let router = useRouter()
 
 let createUser = async () => {
-    // if (isEmailEmpty || isPasswordEmpty){
-    //     validateEmail()
-    //     validatePassword()
-    // } else{
-         try {
-            
             const { data, error } = await supabase.auth.signUp({
                 email: email.value,
                 password: password.value,
                 options: {
                     data: { name: name.value }
                 }
-            }).then(
-                router.push('/')
-            )
-           
-        } catch (error) {
-            console.log(error) 
-    }
-    // }
+            })
+            if (error) {
+                errorMessage.value = error
+                console.log(error)
+            } else {
+                console.log(data)
+            }
        
 }
 let loginUser = async () => {
@@ -109,14 +110,10 @@ let loginUser = async () => {
         const { data, error } = await supabase.auth.signInWithPassword({
         email: email.value,
         password: password.value
-    }).then(res => {
-        console.log(res)
-        router.push('/profile')
     })
-    
     } catch (error) {
-        console.log(error)
-        router.push('/')
+        console.log('error message:  ',error)
+      
 
     }  
    
